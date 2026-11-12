@@ -65,11 +65,35 @@ All routes are under `/api`. Routes marked 🔒 need an `Authorization: Bearer <
 | GET    | `/health`                      | Health check                      |
 | POST   | `/auth/register`               | Create an account, returns a JWT  |
 | POST   | `/auth/login`                  | Log in, returns a JWT             |
-| GET    | `/rooms` 🔒                     | List study rooms                  |
+| GET    | `/rooms` 🔒                     | List all study rooms              |
+| GET    | `/rooms/mine` 🔒                | List rooms you created            |
 | POST   | `/rooms` 🔒                     | Create a study room               |
 | GET    | `/rooms/:id` 🔒                 | Get one room                      |
+| PUT    | `/rooms/:id` 🔒                 | Update a room (creator only)      |
+| DELETE | `/rooms/:id` 🔒                 | Delete a room and its messages (creator only) |
 | GET    | `/rooms/:roomId/messages` 🔒    | List messages in a room           |
 | POST   | `/rooms/:roomId/messages` 🔒    | Send a message to a room          |
+| DELETE | `/rooms/:roomId/messages/:messageId` 🔒 | Delete a message (sender only) |
+
+Errors are always JSON, `{ "error": "..." }`, with a status code that means something:
+
+| Code | When |
+|------|------|
+| 200 / 201 / 204 | OK / created / deleted |
+| 400 | Invalid input, malformed id, or bad JSON |
+| 401 | Missing, invalid, or expired token |
+| 403 | Logged in, but it's not your room or message |
+| 404 | Room or message doesn't exist |
+
+### Testing with curl
+
+With the server running, run the full check from `server/`:
+
+```bash
+npm run smoke
+```
+
+It registers two throwaway users (Alice and Bob) and checks every route, including that Bob gets `403` when he tries to edit or delete Alice's room. On Windows, run it from Git Bash. See [docs/api-testing.md](docs/api-testing.md) for individual curl commands.
 
 ## Project docs
 
