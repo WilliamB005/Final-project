@@ -47,8 +47,23 @@ app.get('/api/health', (req, res) => {
 });
 
 app.use('/api/auth', authRouter);
-app.use('/api/rooms', roomsRouter);
+// Messages first: the more specific path, so it isn't routed through roomsRouter
 app.use('/api/rooms/:roomId/messages', messagesRouter);
+app.use('/api/rooms', roomsRouter);
+
+// Unknown /api routes -> JSON 404
+app.use('/api', (req, res) => {
+  res.status(404).json({ error: 'Not found' });
+});
+
+// Error handler: malformed JSON bodies -> 400, anything else -> 500 (always JSON)
+app.use((err, req, res, next) => {
+  if (err.type === 'entity.parse.failed') {
+    return res.status(400).json({ error: 'Invalid JSON in request body' });
+  }
+  console.error(err);
+  res.status(err.status || 500).json({ error: 'Something went wrong' });
+});
 
 // 4. Connect to MongoDB, then start server
 try {
