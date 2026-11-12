@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { BookOpen, MessageCircle, Users, Zap, Mail, Lock, User, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function Auth() {
@@ -7,11 +8,18 @@ export default function Auth() {
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
   const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const { login, register } = useAuth();
+
+  const switchMode = (login) => {
+    setIsLogin(login);
+    setError('');
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSubmitting(true);
     try {
       if (isLogin) {
         await login(email, password);
@@ -20,67 +28,125 @@ export default function Auth() {
       }
     } catch (err) {
       setError(err.message);
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#f9fafb' }}>
-      <form onSubmit={handleSubmit} style={{ padding: '2rem', background: 'white', border: '1px solid #e5e7eb', borderRadius: '8px', width: '320px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
-        <h2 style={{ marginBottom: '1.5rem', textAlign: 'center', color: '#111827' }}>
-          {isLogin ? 'Login to StudyRoom' : 'Create Account'}
-        </h2>
-        
-        {error && <div style={{ marginBottom: '1rem', padding: '0.5rem', background: '#fee2e2', color: '#b91c1c', borderRadius: '4px', fontSize: '0.875rem' }}>{error}</div>}
-        
-        {!isLogin && (
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '500' }}>Username</label>
-            <input 
-              type="text" 
-              value={username} 
-              onChange={(e) => setUsername(e.target.value)} 
-              required 
-              style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '4px', boxSizing: 'border-box' }}
-            />
-          </div>
-        )}
-
-        <div style={{ marginBottom: '1rem' }}>
-          <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '500' }}>Email</label>
-          <input 
-            type="email" 
-            value={email} 
-            onChange={(e) => setEmail(e.target.value)} 
-            required 
-            style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '4px', boxSizing: 'border-box' }}
-          />
-        </div>
-
-        <div style={{ marginBottom: '1.5rem' }}>
-          <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '500' }}>Password</label>
-          <input 
-            type="password" 
-            value={password} 
-            onChange={(e) => setPassword(e.target.value)} 
-            required 
-            style={{ width: '100%', padding: '0.5rem', border: '1px solid #d1d5db', borderRadius: '4px', boxSizing: 'border-box' }}
-          />
-        </div>
-
-        <button type="submit" style={{ width: '100%', padding: '0.75rem', background: '#4f46e5', color: 'white', border: 'none', borderRadius: '4px', fontWeight: '500', cursor: 'pointer' }}>
-          {isLogin ? 'Login' : 'Register'}
-        </button>
-
-        <p style={{ marginTop: '1rem', textAlign: 'center', fontSize: '0.875rem', color: '#6b7280' }}>
-          {isLogin ? "Don't have an account? " : "Already have an account? "}
-          <span 
-            onClick={() => setIsLogin(!isLogin)} 
-            style={{ color: '#4f46e5', cursor: 'pointer', fontWeight: '500' }}
-          >
-            {isLogin ? 'Register' : 'Login'}
+    <div className="auth-page">
+      <div className="auth-shell card">
+        <aside className="auth-aside">
+          <span className="logo">
+            <span className="logo-mark"><BookOpen size={18} /></span>
+            StudyRoom
           </span>
-        </p>
-      </form>
+
+          <div>
+            <h1>Study together, from anywhere.</h1>
+            <p>Join a room for your course, ask questions, and keep the whole group on track.</p>
+          </div>
+
+          <ul className="feature-list">
+            <li><span className="feature-icon"><Users size={16} /></span>Rooms for every course</li>
+            <li><span className="feature-icon"><MessageCircle size={16} /></span>Group chat in one place</li>
+            <li><span className="feature-icon"><Zap size={16} /></span>Real-time messages (coming soon)</li>
+          </ul>
+        </aside>
+
+        <main className="auth-main">
+          <h2>{isLogin ? 'Welcome back' : 'Create your account'}</h2>
+          <p className="auth-sub">
+            {isLogin ? 'Log in to get back to your study rooms.' : 'It takes less than a minute.'}
+          </p>
+
+          <div className="tabs" role="tablist" aria-label="Login or register">
+            <button type="button" role="tab" className="tab" aria-selected={isLogin} onClick={() => switchMode(true)}>
+              Log in
+            </button>
+            <button type="button" role="tab" className="tab" aria-selected={!isLogin} onClick={() => switchMode(false)}>
+              Register
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit}>
+            {error && (
+              <div className="alert" role="alert">
+                <AlertCircle size={16} />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {!isLogin && (
+              <div className="field">
+                <label htmlFor="username">Username</label>
+                <div className="input-wrap">
+                  <User size={16} />
+                  <input
+                    id="username"
+                    className="input"
+                    type="text"
+                    placeholder="e.g. alice"
+                    autoComplete="username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    minLength={3}
+                    maxLength={30}
+                    required
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="field">
+              <label htmlFor="email">Email</label>
+              <div className="input-wrap">
+                <Mail size={16} />
+                <input
+                  id="email"
+                  className="input"
+                  type="email"
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="field">
+              <label htmlFor="password">Password</label>
+              <div className="input-wrap">
+                <Lock size={16} />
+                <input
+                  id="password"
+                  className="input"
+                  type="password"
+                  placeholder="••••••••"
+                  autoComplete={isLogin ? 'current-password' : 'new-password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  minLength={isLogin ? undefined : 8}
+                  required
+                />
+              </div>
+              {!isLogin && <span className="hint">At least 8 characters.</span>}
+            </div>
+
+            <button type="submit" className="btn btn-primary btn-block" disabled={submitting}>
+              {submitting ? 'Please wait…' : isLogin ? 'Log in' : 'Create account'}
+            </button>
+          </form>
+
+          <p className="auth-switch">
+            {isLogin ? "Don't have an account? " : 'Already have an account? '}
+            <button type="button" className="link-btn" onClick={() => switchMode(!isLogin)}>
+              {isLogin ? 'Register' : 'Log in'}
+            </button>
+          </p>
+        </main>
+      </div>
     </div>
   );
 }

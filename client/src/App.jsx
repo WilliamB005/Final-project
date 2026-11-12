@@ -1,3 +1,4 @@
+import { BookOpen, LogOut, Users, MessageCircle, Zap, CheckCircle2 } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
 import Auth from './components/Auth';
 
@@ -5,7 +6,14 @@ export default function App() {
   const { user, logout, loading } = useAuth();
 
   if (loading) {
-    return <div style={{ textAlign: 'center', marginTop: '20vh', fontFamily: 'sans-serif' }}>Loading session...</div>;
+    return (
+      <div className="loading-screen">
+        <div>
+          <div className="spinner" />
+          Loading your session…
+        </div>
+      </div>
+    );
   }
 
   if (!user) {
@@ -13,27 +21,56 @@ export default function App() {
   }
 
   return (
-    <div style={{ padding: '2rem', fontFamily: 'sans-serif', maxWidth: '800px', margin: '0 auto' }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e5e7eb', paddingBottom: '1rem' }}>
-        <h1 style={{ color: '#111827', margin: 0 }}>StudyRoom Dashboard</h1>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <span>Welcome, <strong>{user.username}</strong>!</span>
-          <button 
-            onClick={logout} 
-            style={{ padding: '0.5rem 1rem', background: '#ef4444', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: '500' }}
-          >
-            Logout
-          </button>
+    <>
+      <header className="topbar">
+        <div className="topbar-inner">
+          <span className="logo">
+            <span className="logo-mark"><BookOpen size={18} /></span>
+            StudyRoom
+          </span>
+
+          <div className="user-chip">
+            <span className="avatar" aria-hidden="true">{user.username?.[0]}</span>
+            <span className="user-name">{user.username}</span>
+            <button type="button" className="btn btn-ghost" onClick={logout}>
+              <LogOut size={16} />
+              Log out
+            </button>
+          </div>
         </div>
       </header>
-      <main style={{ marginTop: '2rem' }}>
-        <div style={{ padding: '1.5rem', background: '#f3f4f6', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
-          <h3 style={{ marginTop: 0, color: '#1f2937' }}>Connection Status: Ready for Rooms & Chat</h3>
-          <p style={{ color: '#4b5563', marginBottom: 0 }}>
-            Your authentication pipeline is fully operational. Next, we can fetch study rooms from your backend and wire up Socket.IO for real-time messaging!
-          </p>
+
+      <main className="page">
+        <section className="welcome card">
+          <h1>Hi {user.username} 👋</h1>
+          <p>You're logged in. Study rooms and group chat will show up here next.</p>
+          <span className="badge"><CheckCircle2 size={14} /> Authentication connected</span>
+        </section>
+
+        <div className="grid">
+          <div className="card stat">
+            <span className="stat-icon rose"><Users size={20} /></span>
+            <div>
+              <h3>Study rooms</h3>
+              <p>Create a room for your course or join one your classmates made.</p>
+            </div>
+          </div>
+          <div className="card stat">
+            <span className="stat-icon sky"><MessageCircle size={20} /></span>
+            <div>
+              <h3>Group chat</h3>
+              <p>Ask questions and share notes with everyone in the room.</p>
+            </div>
+          </div>
+          <div className="card stat">
+            <span className="stat-icon teal"><Zap size={20} /></span>
+            <div>
+              <h3>Real-time</h3>
+              <p>New messages appear instantly, no refresh needed. Coming soon.</p>
+            </div>
+          </div>
         </div>
       </main>
-    </div>
+    </>
   );
 }
