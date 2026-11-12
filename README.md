@@ -33,14 +33,29 @@ A full-stack chat app for study groups. Users sign up, create or join study room
 
    | Variable        | What to put there                                                                                       |
    |-----------------|---------------------------------------------------------------------------------------------------------|
-   | `PORT`          | Port for the API. Default `3000`. The client expects `3000`.                                            |
+   | `PORT`          | Port for the API. Default `3000`. If you change it, update `VITE_API_URL` in `client/.env` too.          |
    | `MONGODB_URI`   | Your connection string, ending in the database name, e.g. `mongodb+srv://USER:PASS@HOST/studyroom?retryWrites=true&w=majority` |
    | `JWT_SECRET`    | Any long random string. Generate one with `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` |
    | `CLIENT_ORIGIN` | URL of the client, for CORS. Default `http://localhost:5173`.                                           |
 
    If you use Atlas, add your IP address under **Network Access**, or the server can't connect.
 
-3. **Run both apps** (two terminals)
+3. **Configure the client environment**
+
+   ```bash
+   cd client
+   cp .env.example .env
+   ```
+
+   `client/.env` has one variable:
+
+   | Variable       | What to put there                                              |
+   |----------------|----------------------------------------------------------------|
+   | `VITE_API_URL` | Base URL of the API. Default `http://localhost:3000/api`.      |
+
+   Restart `npm run dev` after changing it. Vite only reads `.env` on startup.
+
+4. **Run both apps** (two terminals)
 
    ```bash
    # terminal 1
@@ -54,7 +69,14 @@ A full-stack chat app for study groups. Users sign up, create or join study room
    npm run dev      # http://localhost:5173
    ```
 
-4. **Check it works:** open <http://localhost:3000/api/health>. It should return `{"status":"ok", ...}`. Then open <http://localhost:5173> and register an account.
+5. **Check it works:** open <http://localhost:3000/api/health>. It should return `{"status":"ok", ...}`. Then open <http://localhost:5173> and register an account.
+
+## Using the app
+
+- **Sign up / log in / log out:** from the login screen and the top bar. You stay logged in after a page refresh.
+- **Rooms:** the home page lists every room. Use **New room** to create one. On rooms you created, the ✏️ and 🗑️ buttons edit or delete them. **My rooms** shows only yours.
+- **Chat:** click a room to open it. Press Enter to send, Shift+Enter for a new line. New messages from others show up within a few seconds. Hover your own message to delete it.
+- The current room is in the URL (`#/rooms/<id>`), so refreshing or sharing the link opens the same room.
 
 ## API
 
