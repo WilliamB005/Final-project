@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { BookOpen, MessageCircle, Users, Zap, Mail, Lock, User, AlertCircle } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -9,7 +9,7 @@ export default function Auth() {
   const [username, setUsername] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const { login, register } = useAuth();
+  const { login, register, notice } = useAuth();
 
   const switchMode = (login) => {
     setIsLogin(login);
@@ -50,7 +50,7 @@ export default function Auth() {
           <ul className="feature-list">
             <li><span className="feature-icon"><Users size={16} /></span>Rooms for every course</li>
             <li><span className="feature-icon"><MessageCircle size={16} /></span>Group chat in one place</li>
-            <li><span className="feature-icon"><Zap size={16} /></span>Real-time messages (coming soon)</li>
+            <li><span className="feature-icon"><Zap size={16} /></span>New messages show up on their own</li>
           </ul>
         </aside>
 
@@ -70,10 +70,10 @@ export default function Auth() {
           </div>
 
           <form onSubmit={handleSubmit}>
-            {error && (
+            {(error || notice) && (
               <div className="alert" role="alert">
                 <AlertCircle size={16} />
-                <span>{error}</span>
+                <span>{error || notice}</span>
               </div>
             )}
 
