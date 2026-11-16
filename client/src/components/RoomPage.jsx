@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, Pencil, Trash2, Send, MessageCircle } from 'lucide-react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import { api, SOCKET_URL } from '../services/api';
 import { useAuth } from '../context/useAuth';
@@ -7,7 +8,9 @@ import { isMine, formatTime } from '../utils/format';
 import RoomFormModal from './RoomFormModal';
 import { ConfirmModal, ErrorAlert } from './Modal';
 
-export default function RoomPage({ roomId, navigate }) {
+export default function RoomPage() {
+  const { roomId } = useParams(); // the :roomId part of /rooms/:roomId (like req.params on the server)
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [room, setRoom] = useState(null);
   const [messages, setMessages] = useState([]);
