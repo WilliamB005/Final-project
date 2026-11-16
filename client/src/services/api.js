@@ -2,6 +2,10 @@
 // The base URL comes from VITE_API_URL (see client/.env.example).
 const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(/\/+$/, '');
 
+// Socket.IO runs on the same server, without the /api path.
+// new URL(...).origin keeps only "http://localhost:3000" (protocol + host + port).
+export const SOCKET_URL = new URL(API_BASE_URL).origin;
+
 if (!import.meta.env.VITE_API_URL) {
   console.warn('VITE_API_URL is not set, using http://localhost:3000/api. Copy client/.env.example to client/.env.');
 }
