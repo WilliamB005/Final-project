@@ -7,6 +7,13 @@ A full-stack chat app for study groups. Users sign up, create or join study room
 
 **Team:** Clara Abi Nader, Angelina Abboud, William Bitar (USJ ESIB, Web Programming capstone)
 
+## Live demo
+
+- **App:** <https://studyroomlb.netlify.app>
+- **API:** <https://studyroom-ar14.onrender.com/api> (health check: <https://studyroom-ar14.onrender.com/api/health>)
+
+The API runs on Render's free plan, which sleeps after 15 minutes without traffic. The first request after that can take about a minute while it wakes up.
+
 ## Features
 
 - **Accounts:** sign up, log in and log out. Passwords are stored as bcrypt hashes; logging in returns a JWT that lasts 1 hour. You stay logged in after a page refresh, and an expired session logs you out with a message.
@@ -169,6 +176,32 @@ Run `npm test` in `server/` (6 API tests with Vitest + supertest, no database ne
 ### Testing by hand with curl
 
 With the server running, [docs/api-testing.md](docs/api-testing.md) has curl commands for every route, including the check that Bob gets `403` when he tries to edit or delete Alice's room.
+
+## Deployment
+
+| Part | Host | Settings |
+|---|---|---|
+| API (`server/`) | Render web service, Frankfurt, free plan | Root directory `server`, build `npm install`, start `node server.js` |
+| Client (`client/`) | Netlify | Built with `npm run build`, then the `dist` folder is uploaded |
+| Database | MongoDB Atlas, Ireland | Network access allows `0.0.0.0/0` so Render can connect |
+
+Environment variables are set in each host's dashboard, never in a committed file:
+
+- **Render:** `MONGODB_URI`, `JWT_SECRET`, `CLIENT_ORIGIN=https://studyroomlb.netlify.app` (Render sets `PORT` itself)
+- **Client build:** `VITE_API_URL=https://studyroom-ar14.onrender.com/api`
+
+**Updating the live site after a merge to `main`:**
+
+1. Render: **Manual Deploy → Deploy latest commit**.
+2. Client, from `client/`:
+
+   ```bash
+   VITE_API_URL=https://studyroom-ar14.onrender.com/api npm run build
+   ```
+
+   Then drag the new `dist` folder onto the site's **Deploys** page on Netlify.
+
+`client/public/_redirects` tells Netlify to serve `index.html` for every URL, so refreshing on `/rooms/<id>` works.
 
 ## Project docs
 
