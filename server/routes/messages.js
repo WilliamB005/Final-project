@@ -3,6 +3,7 @@ import Message from '../models/Message.js';
 import Room from '../models/Room.js';
 import requireAuth from '../middleware/requireAuth.js';
 import { validate, validId, MessageInput } from '../middleware/validate.js';
+import { getIO } from '../socket.js';
 
 // mergeParams gives access to :roomId from /api/rooms/:roomId/messages
 const router = express.Router({ mergeParams: true });
@@ -43,6 +44,10 @@ router.post('/', validate(MessageInput), async (req, res) => {
       room: req.params.roomId,
     });
     await message.populate('sender', 'username');
+
+    // Push the new message to everyone who has this room open (RoomPage listens for 'message:new')
+    getIO()?.to(req.params.roomId).emit('message:new', message);
+
     res.status(201).json(message);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -60,6 +65,8 @@ router.delete('/:messageId', validId('messageId'), async (req, res) => {
       return res.status(403).json({ error: 'You can only delete your own messages' });
     }
     await message.deleteOne();
+    // Tell everyone in the room to remove it from their screen
+    getIO()?.to(req.params.roomId).emit('message:deleted', { _id: String(message._id) });
     res.status(204).end();
   } catch (err) {
     res.status(500).json({ error: err.message });

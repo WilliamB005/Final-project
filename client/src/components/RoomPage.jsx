@@ -1,13 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, Pencil, Trash2, Send, MessageCircle } from 'lucide-react';
-import { api } from '../services/api';
+import { io } from 'socket.io-client';
+import { api, SOCKET_URL } from '../services/api';
 import { useAuth } from '../context/useAuth';
 import { isMine, formatTime } from '../utils/format';
 import RoomFormModal from './RoomFormModal';
 import { ConfirmModal, ErrorAlert } from './Modal';
-
-// How often to check for new messages until real-time (Socket.IO) is added
-const POLL_MS = 4000;
 
 export default function RoomPage({ roomId, navigate }) {
   const { user } = useAuth();
@@ -39,17 +37,28 @@ export default function RoomPage({ roomId, navigate }) {
     };
   }, [roomId, reloadKey]);
 
-  // Poll for new messages while the room is open
+  // Live updates: one open connection while this room is on screen (replaces the 4-second polling)
   useEffect(() => {
-    if (!room) return undefined;
-    const id = setInterval(() => {
-      api.messages
-        .list(roomId)
-        .then(setMessages)
-        .catch(() => {}); // a missed poll is fine; the next one will retry
-    }, POLL_MS);
-    return () => clearInterval(id);
-  }, [room, roomId]);
+    const socket = io(SOCKET_URL, { auth: { token: localStorage.getItem('token') } });
+
+    // Add a message once, even if it arrives twice (from our own POST and from the socket)
+    const addMessage = (message) =>
+      setMessages((list) => (list.some((m) => m._id === message._id) ? list : [...list, message]));
+    const removeMessage = ({ _id }) => setMessages((list) => list.filter((m) => m._id !== _id));
+
+    // Tell the server we opened this room, so it puts us in the room's group (see socket.js)
+    socket.emit('room:join', roomId);
+
+    // When the server pushes an event for this room, update the list
+    socket.on('message:new', addMessage);
+    socket.on('message:deleted', removeMessage);
+
+    // Cleanup: leave the room and hang up when you go back or switch rooms
+    return () => {
+      socket.emit('room:leave', roomId);
+      socket.disconnect();
+    };
+  }, [roomId]);
 
   // Scroll to the newest message when the count changes
   useEffect(() => {

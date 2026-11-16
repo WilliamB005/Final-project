@@ -4,6 +4,7 @@
 import 'dotenv/config';
 import mongoose from 'mongoose';
 import app from './app.js';
+import { initSocket } from './socket.js';
 
 for (const key of ['MONGODB_URI', 'JWT_SECRET']) {
   if (!process.env[key]) {
@@ -19,9 +20,10 @@ try {
   await mongoose.connect(dbUri);
   console.log('Connected to MongoDB');
 
-  app.listen(PORT, () => {
+  const httpServer = app.listen(PORT, () => {
     console.log(`Listening on http://localhost:${PORT}`);
   });
+  initSocket(httpServer); // Socket.IO shares the same server and port as the API
 } catch (err) {
   console.error('DB connection failed:', err.message);
   process.exit(1);
