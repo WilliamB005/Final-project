@@ -3,7 +3,61 @@
 A full-stack chat app for study groups. Users sign up, create or join study rooms, and message each other inside a room.
 
 - **Client:** React + Vite (`client/`)
-- **Server:** Express + MongoDB/Mongoose, JWT auth (`server/`)
+- **Server:** Express + MongoDB/Mongoose, JWT auth, Socket.IO (`server/`)
+
+**Team:** Clara Abi Nader, Angelina Abboud, William Bitar (USJ ESIB, Web Programming capstone)
+
+## Features
+
+- **Accounts:** sign up, log in and log out. Passwords are stored as bcrypt hashes; logging in returns a JWT that lasts 1 hour. You stay logged in after a page refresh, and an expired session logs you out with a message.
+- **Study rooms:** see every room or only yours, create a room, and edit or delete the rooms you created.
+- **Real-time chat:** messages appear instantly for everyone in the room, with no refresh (Socket.IO). You can delete your own messages, and they disappear for everyone.
+- **Protected API:** every room and message route needs a valid token (401 otherwise); only the creator can change a room and only the sender can delete a message (403); every input is validated (400).
+- **Security:** helmet headers, CORS limited to our client, rate limiting (5 login attempts per 15 minutes), secrets kept in `.env` files that are never committed.
+- **Responsive design:** works on phones and desktops, in light and dark mode.
+- **Automated tests:** 6 API tests on the server and 7 tests on the client.
+
+## Tech stack
+
+| Layer | Tools |
+|---|---|
+| Front end | React 19, Vite, React Router, socket.io-client, lucide-react icons |
+| Back end | Node.js, Express 5, Socket.IO |
+| Database | MongoDB Atlas, with Mongoose models |
+| Authentication | bcrypt (password hashing), jsonwebtoken (JWT) |
+| Validation and security | zod, helmet, cors, express-rate-limit |
+| Testing | Vitest, supertest, React Testing Library, jsdom |
+| Deployment | Netlify (client), Render (API) |
+
+## Architecture
+
+Two apps that talk over HTTP, plus one live connection for chat:
+
+```mermaid
+flowchart LR
+    subgraph Browser["Client (React, in the browser)"]
+        P[Pages: Auth, RoomsPage, RoomPage] --> A[api.js: adds the JWT]
+        P --> S[socket.io-client]
+    end
+    subgraph Server["Server (Express on Node.js)"]
+        M[app.js: helmet, cors, json, rate limit] --> G[requireAuth + validate]
+        G --> R[routes: auth, rooms, messages]
+        IO[socket.js: Socket.IO, checks the JWT]
+    end
+    A -- "REST: HTTP + JSON + Bearer token" --> M
+    S <-- "live events per room" --> IO
+    R -- "Mongoose" --> DB[(MongoDB Atlas)]
+    R -- "message:new / message:deleted" --> IO
+```
+
+**What happens when you send a message:**
+
+1. `RoomPage` sends `POST /api/rooms/:roomId/messages`, and `api.js` adds the `Authorization: Bearer <token>` header.
+2. On the server, the request passes `requireAuth` (who are you?), `validId` (is the room id valid?), a check that the room exists, and `validate` (is the message valid?).
+3. The route saves the message with Mongoose, using the token's user as the sender.
+4. The route emits `message:new` to that room through Socket.IO, and every browser that has the room open adds the message straight away.
+
+`server/app.js` holds the middleware and routes; `server/server.js` connects to MongoDB, starts listening, and starts Socket.IO on the same port. Keeping them apart lets the tests use the app without a database.
 
 ## Prerequisites
 
@@ -75,8 +129,8 @@ A full-stack chat app for study groups. Users sign up, create or join study room
 
 - **Sign up / log in / log out:** from the login screen and the top bar. You stay logged in after a page refresh.
 - **Rooms:** the home page lists every room. Use **New room** to create one. On rooms you created, the ✏️ and 🗑️ buttons edit or delete them. **My rooms** shows only yours.
-- **Chat:** click a room to open it. Press Enter to send, Shift+Enter for a new line. New messages from others show up within a few seconds. Hover your own message to delete it.
-- The current room is in the URL (`#/rooms/<id>`), so refreshing or sharing the link opens the same room.
+- **Chat:** click a room to open it. Press Enter to send, Shift+Enter for a new line. New messages from others appear instantly. Hover your own message to delete it.
+- The current room is in the URL (`/rooms/<id>`), so refreshing or sharing the link opens the same room.
 
 ## API
 
@@ -124,15 +178,21 @@ With the server running, [docs/api-testing.md](docs/api-testing.md) has curl com
 ## Project structure
 
 ```
-client/          React + Vite front end
+client/              React + Vite front end
+  public/_redirects  Lets Netlify serve the app on any URL (React Router)
   src/
-    components/  UI components (Auth, ...)
-    context/     AuthContext (current user + token)
-    services/    api.js (fetch wrapper)
-server/          Express API
-  middleware/    requireAuth, validate
-  models/        Mongoose models: User, Room, Message
-  routes/        auth, rooms, messages
-  server.js      App entry point
-docs/            Schema and wireframes
+    App.jsx          Routes: / (rooms list), /rooms/:roomId (chat)
+    components/      Auth, RoomsPage, RoomPage, modals (+ ConfirmModal.test.jsx)
+    context/         AuthContext (current user + token)
+    services/        api.js (fetch wrapper that adds the token)
+    utils/           format helpers (+ format.test.js)
+server/              Express API
+  app.js             Middleware and routes (imported by the tests)
+  server.js          Connects to MongoDB, starts the server and Socket.IO
+  socket.js          Real-time layer: rooms, message:new, message:deleted
+  middleware/        requireAuth, validate
+  models/            Mongoose models: User, Room, Message
+  routes/            auth, rooms, messages
+  tests/             api.test.js (Vitest + supertest)
+docs/                Schema, wireframes, curl commands
 ```
