@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Plus, Pencil, Trash2, Users, RefreshCw, MessageCircle } from 'lucide-react';
 import { api } from '../services/api';
 import { useAuth } from '../context/useAuth';
@@ -6,7 +7,8 @@ import { isMine, formatDate } from '../utils/format';
 import RoomFormModal from './RoomFormModal';
 import { ConfirmModal, ErrorAlert } from './Modal';
 
-export default function RoomsPage({ navigate }) {
+export default function RoomsPage() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
