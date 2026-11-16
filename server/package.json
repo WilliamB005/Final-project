@@ -6,8 +6,7 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "dev": "node --watch server.js",
-    "smoke": "bash scripts/smoke-test.sh"
+    "dev": "node --watch server.js"
   },
   "keywords": [],
   "author": "",

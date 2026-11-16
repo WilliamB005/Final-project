@@ -13,27 +13,21 @@ router.post('/register', validate(RegisterInput), async (req, res) => {
     
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ error: 'Email already in use' });
+      return res.status(409).json({ error: 'Email already in use' }); // 409 Conflict (Session 19)
     }
 
     const existingUsername = await User.findOne({ username });
     if (existingUsername) {
-      return res.status(400).json({ error: 'Username already taken' });
+      return res.status(409).json({ error: 'Username already taken' });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 12); // cost 12, as in the slides
     const user = new User({ username, email, password: hashedPassword });
     await user.save();
 
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
     res.status(201).json({ token, user: { id: user._id, username: user.username, email: user.email } });
   } catch (err) {
-    // Two simultaneous signups can both pass the checks above; the unique index catches the second one.
-    if (err.code === 11000) {
-      const field = Object.keys(err.keyPattern || {})[0];
-      const message = field === 'username' ? 'Username already taken' : 'Email already in use';
-      return res.status(400).json({ error: message });
-    }
     res.status(500).json({ error: err.message });
   }
 });
@@ -44,20 +38,21 @@ router.post('/login', validate(LoginInput), async (req, res) => {
     const { email, password } = req.body;
     
     const user = await User.findOne({ email });
+    // Same message and status for both failures, so nobody learns which emails exist
     if (!user) {
-      return res.status(400).json({ error: 'Invalid email or password' });
+      return res.status(401).json({ error: 'Invalid email or password' });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ error: 'Invalid email or password' });
+      return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
     res.json({ token, user: { id: user._id, username: user.username, email: user.email } });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-export default router;
+export default router;

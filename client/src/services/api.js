@@ -1,6 +1,6 @@
 // All calls to the StudyRoom API go through here.
-// The base URL comes from VITE_API_URL (see client/.env.example).
-const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(/\/+$/, '');
+// The base URL comes from VITE_API_URL (see client/.env.example), written without a final /.
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 // Socket.IO runs on the same server, without the /api path.
 // new URL(...).origin keeps only "http://localhost:3000" (protocol + host + port).
@@ -10,11 +10,11 @@ if (!import.meta.env.VITE_API_URL) {
   console.warn('VITE_API_URL is not set, using http://localhost:3000/api. Copy client/.env.example to client/.env.');
 }
 
-export class ApiError extends Error {
-  constructor(message, status) {
-    super(message);
-    this.status = status;
-  }
+// An Error that also remembers the HTTP status (404, 401…) so pages can react to it
+function apiError(message, status) {
+  const err = new Error(message);
+  err.status = status;
+  return err;
 }
 
 // Fired when the server rejects our token (expired / user deleted) so AuthContext can log out
@@ -33,7 +33,7 @@ export async function apiFetch(endpoint, options = {}) {
   try {
     response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
   } catch {
-    throw new ApiError("Can't reach the server. Check that it's running and try again.", 0);
+    throw apiError("Can't reach the server. Check that it's running and try again.", 0);
   }
 
   // 204 No Content (e.g. after DELETE) has no body
@@ -43,7 +43,7 @@ export async function apiFetch(endpoint, options = {}) {
     if (response.status === 401 && token) {
       window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT));
     }
-    throw new ApiError(data?.error || data?.message || `Request failed (${response.status})`, response.status);
+    throw apiError(data?.error || data?.message || `Request failed (${response.status})`, response.status);
   }
 
   return data;

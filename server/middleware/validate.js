@@ -20,12 +20,6 @@ export const RoomInput = z.object({
   description: z.string().trim().max(500, 'Description must be at most 500 characters').optional(),
 });
 
-// For updates every field is optional, but at least one must be sent
-export const RoomUpdate = RoomInput.partial().refine(
-  (data) => Object.keys(data).length > 0,
-  { message: 'Send at least one field to update (name or description)' },
-);
-
 // Messages (fields match server/models/Message.js)
 export const MessageInput = z.object({
   content: z.string().trim().min(1, 'Message cannot be empty').max(2000, 'Message must be at most 2000 characters'),
