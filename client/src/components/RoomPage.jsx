@@ -25,16 +25,24 @@ export default function RoomPage() {
 
   // Load the room and its messages
   useEffect(() => {
-    let cancelled = false;
-    Promise.all([api.rooms.get(roomId), api.messages.list(roomId)])
-      .then(([roomData, messageData]) => {
+    let cancelled = false; // set to true if we leave the page before the answers arrive
+
+    const load = async () => {
+      try {
+        const roomData = await api.rooms.get(roomId);
+        const messageData = await api.messages.list(roomId);
         if (cancelled) return;
         setRoom(roomData);
         setMessages(messageData);
         setError(null);
-      })
-      .catch((err) => !cancelled && setError({ message: err.message, status: err.status }))
-      .finally(() => !cancelled && setLoading(false));
+      } catch (err) {
+        if (!cancelled) setError({ message: err.message, status: err.status });
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    load();
     return () => {
       cancelled = true;
     };

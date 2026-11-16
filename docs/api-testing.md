@@ -1,7 +1,6 @@
 # Testing the API with curl
 
 Start the server (`cd server && npm run dev`), then run these in Git Bash or another bash terminal.
-For the whole set at once, run `npm run smoke` from `server/`.
 
 ```bash
 API=http://localhost:3000/api

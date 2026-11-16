@@ -103,19 +103,18 @@ Errors are always JSON, `{ "error": "..." }`, with a status code that means some
 |------|------|
 | 200 / 201 / 204 | OK / created / deleted |
 | 400 | Invalid input, malformed id, or bad JSON |
-| 401 | Missing, invalid, or expired token |
+| 401 | Missing, invalid, or expired token, or wrong email/password at login |
 | 403 | Logged in, but it's not your room or message |
 | 404 | Room or message doesn't exist |
+| 409 | Email or username already used at sign-up |
 
-### Testing with curl
+### Automated tests
 
-With the server running, run the full check from `server/`:
+Run `npm test` in `server/` (6 API tests with Vitest + supertest, no database needed) and in `client/` (7 tests with Vitest + Testing Library).
 
-```bash
-npm run smoke
-```
+### Testing by hand with curl
 
-It registers two throwaway users (Alice and Bob) and checks every route, including that Bob gets `403` when he tries to edit or delete Alice's room. On Windows, run it from Git Bash. See [docs/api-testing.md](docs/api-testing.md) for individual curl commands.
+With the server running, [docs/api-testing.md](docs/api-testing.md) has curl commands for every route, including the check that Bob gets `403` when he tries to edit or delete Alice's room.
 
 ## Project docs
 

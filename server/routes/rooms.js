@@ -2,7 +2,7 @@ import express from 'express';
 import Room from '../models/Room.js';
 import Message from '../models/Message.js';
 import requireAuth from '../middleware/requireAuth.js';
-import { validate, validId, RoomInput, RoomUpdate } from '../middleware/validate.js';
+import { validate, validId, RoomInput } from '../middleware/validate.js';
 
 const router = express.Router();
 
@@ -61,7 +61,8 @@ async function findOwnRoom(req, res) {
     res.status(404).json({ error: 'Room not found' });
     return null;
   }
-  if (!room.createdBy.equals(req.userId)) {
+  // Ids are objects, so compare them as text
+  if (String(room.createdBy) !== String(req.userId)) {
     res.status(403).json({ error: 'Only the room creator can do that' });
     return null;
   }
@@ -69,7 +70,7 @@ async function findOwnRoom(req, res) {
 }
 
 // Update a room (creator only)
-router.put('/:id', validId('id'), validate(RoomUpdate), async (req, res) => {
+router.put('/:id', validId('id'), validate(RoomInput), async (req, res) => {
   try {
     const room = await findOwnRoom(req, res);
     if (!room) return;

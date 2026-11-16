@@ -61,7 +61,7 @@ router.delete('/:messageId', validId('messageId'), async (req, res) => {
     if (!message) {
       return res.status(404).json({ error: 'Message not found' });
     }
-    if (!message.sender.equals(req.userId)) {
+    if (String(message.sender) !== String(req.userId)) {
       return res.status(403).json({ error: 'You can only delete your own messages' });
     }
     await message.deleteOne();
