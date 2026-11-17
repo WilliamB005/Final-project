@@ -1,0 +1,9 @@
+# Netlify settings for the client (Session 23: "Connect the repo, set three fields").
+# With the repo linked, every push to main rebuilds and redeploys the front end.
+[build]
+  base = "client"            # root directory
+  command = "npm run build"  # build command
+  publish = "dist"           # output directory (inside client/)
+
+[build.environment]
+  NODE_VERSION = "22"
