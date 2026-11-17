@@ -1,14 +1,15 @@
 // All calls to the StudyRoom API go through here.
 // The base URL comes from VITE_API_URL (see client/.env.example), written without a final /.
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+// No address is written in the code: your laptop sets it in client/.env, the live site at build time.
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
+if (!API_BASE_URL) {
+  throw new Error('VITE_API_URL is not set. Copy client/.env.example to client/.env, or set it before npm run build.');
+}
 
 // Socket.IO runs on the same server, without the /api path.
-// new URL(...).origin keeps only "http://localhost:3000" (protocol + host + port).
+// new URL(...).origin keeps only the protocol, host and port, e.g. "https://studyroom-ar14.onrender.com".
 export const SOCKET_URL = new URL(API_BASE_URL).origin;
-
-if (!import.meta.env.VITE_API_URL) {
-  console.warn('VITE_API_URL is not set, using http://localhost:3000/api. Copy client/.env.example to client/.env.');
-}
 
 // An Error that also remembers the HTTP status (404, 401…) so pages can react to it
 function apiError(message, status) {

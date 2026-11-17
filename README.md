@@ -97,7 +97,7 @@ flowchart LR
    | `PORT`          | Port for the API. Default `3000`. If you change it, update `VITE_API_URL` in `client/.env` too.          |
    | `MONGODB_URI`   | Your connection string, ending in the database name, e.g. `mongodb+srv://USER:PASS@HOST/studyroom?retryWrites=true&w=majority` |
    | `JWT_SECRET`    | Any long random string. Generate one with `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` |
-   | `CLIENT_ORIGIN` | URL of the client, for CORS. Default `http://localhost:5173`.                                           |
+   | `CLIENT_ORIGIN` | Required. URL of the client, for CORS, with no `/` at the end. On your laptop: `http://localhost:5173`.  |
 
    If you use Atlas, add your IP address under **Network Access**, or the server can't connect.
 
@@ -112,7 +112,7 @@ flowchart LR
 
    | Variable       | What to put there                                              |
    |----------------|----------------------------------------------------------------|
-   | `VITE_API_URL` | Base URL of the API. Default `http://localhost:3000/api`.      |
+   | `VITE_API_URL` | Required. Base URL of the API. On your laptop: `http://localhost:3000/api`. |
 
    Restart `npm run dev` after changing it. Vite only reads `.env` on startup.
 
@@ -181,7 +181,7 @@ With the server running, [docs/api-testing.md](docs/api-testing.md) has curl com
 
 | Part | Host | Settings |
 |---|---|---|
-| API (`server/`) | Render web service, Frankfurt, free plan | Root directory `server`, build `npm install`, start `node server.js` |
+| API (`server/`) | Render web service, Frankfurt, free plan | Root directory `server`, build `npm ci`, start `npm start` |
 | Client (`client/`) | Netlify | Built with `npm run build`, then the `dist` folder is uploaded |
 | Database | MongoDB Atlas, Ireland | Network access allows `0.0.0.0/0` so Render can connect |
 
