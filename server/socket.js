@@ -10,7 +10,7 @@ let io = null;
 
 export function initSocket(httpServer) {
   io = new Server(httpServer, {
-    cors: { origin: process.env.CLIENT_ORIGIN || 'http://localhost:5173' },
+    cors: { origin: process.env.CLIENT_ORIGIN },
   });
 
   // Like requireAuth, but for the socket connection: no valid token, no connection
