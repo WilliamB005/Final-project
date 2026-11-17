@@ -6,7 +6,7 @@ import mongoose from 'mongoose';
 import app from './app.js';
 import { initSocket } from './socket.js';
 
-for (const key of ['MONGODB_URI', 'JWT_SECRET']) {
+for (const key of ['MONGODB_URI', 'JWT_SECRET', 'CLIENT_ORIGIN']) {
   if (!process.env[key]) {
     throw new Error(`Missing required environment variable: ${key}`);
   }
@@ -21,7 +21,7 @@ try {
   console.log('Connected to MongoDB');
 
   const httpServer = app.listen(PORT, () => {
-    console.log(`Listening on http://localhost:${PORT}`);
+    console.log(`Listening on port ${PORT}`);
   });
   initSocket(httpServer); // Socket.IO shares the same server and port as the API
 } catch (err) {

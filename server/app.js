@@ -15,7 +15,8 @@ const app = express();
 
 // 1. Security & Core Middleware
 app.use(helmet());
-app.use(cors({ origin: process.env.CLIENT_ORIGIN || 'http://localhost:5173' }));
+// Only our client may call the API. server.js refuses to start without CLIENT_ORIGIN.
+app.use(cors({ origin: process.env.CLIENT_ORIGIN }));
 app.use(express.json());
 app.set('trust proxy', 1);
 
